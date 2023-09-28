@@ -70,5 +70,6 @@ contract ContractTest is Test {
 
         // Check that not all similar contracts apply, even if they had the same secret
         escrow.reward(address(otherToken), payable(deployer));
+        vm.expectRevert("No escrow exists for this target");
     }
 }
