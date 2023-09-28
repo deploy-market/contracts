@@ -15,7 +15,7 @@ contract ContractTest is Test {
         escrow = new DeployEscrow();
     }
 
-    function testDeploy() public {
+    function test_Deploy() public {
         bytes32 testSecret = keccak256("supercereal");
         uint256 rewardAmount = 1 ether;
 
@@ -45,5 +45,30 @@ contract ContractTest is Test {
         escrow.reward(address(myToken), payable(deployer));
         assertEq(address(escrow).balance, 0);
         vm.stopPrank();
+    }
+
+    function testFail_Deploy() public {
+        bytes32 testSecret = keccak256("supercereal");
+        uint256 rewardAmount = 1 ether;
+
+        address deployer = 0x08A2DE6F3528319123b25935C92888B16db8913E;
+
+        vm.startPrank(deployer);
+        ExampleToken myToken = new ExampleToken();
+        bytes32 targetHash = keccak256(
+            abi.encodePacked(address(myToken), testSecret)
+        );
+        vm.stopPrank();
+        ExampleToken otherToken = new ExampleToken();
+
+        // Submit a deploy request
+        escrow.submitDeployRequest{value: rewardAmount}(
+            targetHash,
+            address(this),
+            block.number + 100
+        );
+
+        // Check that not all similar contracts apply, even if they had the same secret
+        escrow.reward(address(otherToken), payable(deployer));
     }
 }
