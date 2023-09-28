@@ -1,63 +1,73 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
-import DeployEligible from "./interfaces/DeployEligible.sol";
-
-struct Escrow {
-  amount: uint256,
-  customer: address,
-  deadline: uint256,
-}
+import "./interfaces/DeployEligible.sol";
 
 contract DeployEscrow {
-  // Mapping from target hash (contract address + secret) to escrow
-  mapping (bytes32 => Escrow) public escrows;
+    struct Escrow {
+        uint256 amount;
+        address submitter;
+        uint256 deadline;
+    }
 
-  /**
-   * A deploy request is simply a customer submitted challenge submitted to
-   * this escrow that can be withdrawn with successful deployment of a contract
-   */
-  function submitDeployRequest(bytes32 targetHash, address submitter, uint256 deadline) public payable {
-    escrows[targetHash] = Escrow({
-      amount: msg.value,
-      submitter: submitter,
-      deadline: deadline
-    });
-  }
+    // Mapping from target hash (contract address + secret) to escrow
+    mapping(bytes32 => Escrow) public escrows;
 
-  /**
-   * @dev Withdraws the escrowed funds if the target contract has been deployed
-   * successfully.
-   */
-  function reward(address targetAddress, address payable deployerAddress) public {
-    // Check that the target contract has been deployed successfully
-    DeployEligible memory target = DeployEligible(targetAddress);
-    bytes32 memory secret = target.getDeploySecret()
+    /**
+     * A deploy request is simply a customer submitted challenge submitted to
+     * this escrow that can be withdrawn with successful deployment of a contract
+     */
+    function submitDeployRequest(
+        bytes32 targetHash,
+        address submitter,
+        uint256 deadline
+    ) public payable {
+        escrows[targetHash] = Escrow({
+            amount: msg.value,
+            submitter: submitter,
+            deadline: deadline
+        });
+    }
 
-    // (Re)construct the submitted target hash from deployed contract info
-    bytes32 targetHash = keccak256(abi.encodePacked(targetAddress, secret));
+    /**
+     * @dev Withdraws the escrowed funds if the target contract has been deployed
+     * successfully.
+     */
+    function reward(
+        address targetAddress,
+        address payable deployerAddress
+    ) public {
+        // Check that the target contract has been deployed successfully
+        DeployEligible target = DeployEligible(address(targetAddress));
+        bytes32 secret = target.getDeploySecret();
 
-    // Check that the escrow exists and has not expired
-    Escrow memory escrow = escrows[targetHash];
-    require(escrow.amount > 0, "No escrow exists for this target");
-    require(escrow.deadline > block.number, "Job deadline has passed");
+        // (Re)construct the submitted target hash from deployed contract info
+        bytes32 targetHash = keccak256(abi.encodePacked(targetAddress, secret));
 
-    // Transfer marked funds to the deployer
-    delete escrows[targetHash];
-    (bool success, ) = deployerAddress.call{value: escrow.amount}("");
-    require(success, "Failed to send a reward");
-  }
+        // Check that the escrow exists and has not expired
+        Escrow memory escrow = escrows[targetHash];
+        require(escrow.amount > 0, "No escrow exists for this target");
+        require(escrow.deadline > block.number, "Job deadline has passed");
 
-  /**
-   * @dev Withdraws the escrowed funds if the deadline has passed without a successful deployment
-   */
-  function withdraw(bytes32 targetHash) public {
-    Escrow memory escrow = escrows[targetHash];
-    require(escrow.amount > 0, "No escrow exists for this target");
-    require(escrow.deadline < block.number, "Job still open, wait for the deadline");
+        // Transfer marked funds to the deployer
+        delete escrows[targetHash];
+        (bool success, ) = deployerAddress.call{value: escrow.amount}("");
+        require(success, "Failed to send a reward");
+    }
 
-    delete escrows[targetHash];
-    (bool success, ) = escrow.submitter.call{value: escrow.amount}("");
-    require(success, "Failed to withdraw");
-  }
+    /**
+     * @dev Withdraws the escrowed funds if the deadline has passed without a successful deployment
+     */
+    function withdraw(bytes32 targetHash) public {
+        Escrow memory escrow = escrows[targetHash];
+        require(escrow.amount > 0, "No escrow exists for this target");
+        require(
+            escrow.deadline < block.number,
+            "Job still open, wait for the deadline"
+        );
+
+        delete escrows[targetHash];
+        (bool success, ) = escrow.submitter.call{value: escrow.amount}("");
+        require(success, "Failed to withdraw");
+    }
 }
