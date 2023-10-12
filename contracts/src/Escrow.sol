@@ -17,7 +17,7 @@ contract DeployEscrow {
      * A deploy request is simply a customer submitted challenge submitted to
      * this escrow that can be withdrawn with successful deployment of a contract
      */
-    function submitDeployRequest(
+    function submitRequest(
         bytes32 targetHash,
         address submitter,
         uint256 deadline

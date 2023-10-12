@@ -11,24 +11,29 @@ import "../ExampleToken.sol";
 contract ContractTest is Test {
     DeployEscrow escrow;
 
+    bytes32 testSecret = "supercereal";
+    bytes32 encoded_testSecret = keccak256(abi.encodePacked(testSecret));
+    address deployer = 0x08A2DE6F3528319123b25935C92888B16db8913E;
+    uint256 rewardAmount = 1 ether;
+
     function setUp() public {
         escrow = new DeployEscrow();
     }
 
     function test_Deploy() public {
-        bytes32 testSecret = keccak256("supercereal");
-        uint256 rewardAmount = 1 ether;
-
-        address deployer = 0x08A2DE6F3528319123b25935C92888B16db8913E;
-
+        /**
+         * Deploy the contract here to get the address & the target hash.
+         * Normally this would be done in advance by the customer
+         * in the dApp, only simulating the transaction.
+         */
         vm.startPrank(deployer);
-        ExampleToken myToken = new ExampleToken();
+        ExampleToken myToken = new ExampleToken(testSecret);
         bytes32 targetHash = keccak256(
-            abi.encodePacked(address(myToken), testSecret)
+            abi.encodePacked(address(myToken), encoded_testSecret)
         );
         vm.stopPrank();
 
-        // Submit a deploy request
+        // Submit a deploy request as the customer
         escrow.submitDeployRequest{value: rewardAmount}(
             targetHash,
             address(this),
@@ -48,18 +53,35 @@ contract ContractTest is Test {
     }
 
     function testFail_Deploy() public {
-        bytes32 testSecret = keccak256("supercereal");
-        uint256 rewardAmount = 1 ether;
-
-        address deployer = 0x08A2DE6F3528319123b25935C92888B16db8913E;
-
         vm.startPrank(deployer);
-        ExampleToken myToken = new ExampleToken();
+        ExampleToken myToken = new ExampleToken(testSecret);
+
         bytes32 targetHash = keccak256(
-            abi.encodePacked(address(myToken), testSecret)
+            abi.encodePacked(address(myToken), encoded_testSecret)
+        );
+
+        vm.stopPrank();
+        ExampleToken otherToken = new ExampleToken(testSecret);
+
+        // Submit a deploy request
+        escrow.submitDeployRequest{value: rewardAmount}(
+            targetHash,
+            address(this),
+            block.number + 100
+        );
+
+        // Check that not all similar contracts apply, even if they had the same secret
+        escrow.reward(address(otherToken), payable(deployer));
+        vm.expectRevert("No escrow exists for this target");
+    }
+
+    function testFail_Because_of_Change() public {
+        vm.startPrank(deployer);
+        ExampleToken myToken = new ExampleToken(testSecret);
+        bytes32 targetHash = keccak256(
+            abi.encodePacked(address(myToken), encoded_testSecret)
         );
         vm.stopPrank();
-        ExampleToken otherToken = new ExampleToken();
 
         // Submit a deploy request
         escrow.submitDeployRequest{value: rewardAmount}(
