@@ -1,8 +1,6 @@
-import './globals.css'
+import "@fontsource-variable/eb-garamond"
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -16,7 +14,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="description" content="Astro description" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon2.svg" />
+      </head>
+      <body className="bg-gray-950 font-garamond">{children}</body>
     </html>
   )
 }

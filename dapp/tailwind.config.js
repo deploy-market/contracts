@@ -1,3 +1,5 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -72,5 +74,8 @@ module.exports = {
       },
     },
   },
+  fontFamily: {
+		garamond: ["EB Garamond Variable", ...defaultTheme.fontFamily.serif],
+	},
   plugins: [require("tailwindcss-animate")],
 }

@@ -1,10 +1,26 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import Wrapper from '@/components/wrapper'
+
+import Image from 'next/image'
 
 export default function Home() {
   return (
-    <main className="flex flex-col gap-6 p-16">
+      <main className="flex items-center justify-center h-screen w-full overflow-hidden text-gray-400 p-2">
+        <Wrapper>
+          <div className="brightness-[1.4]">
+            <Image
+              src="/deploy.market.color.svg"
+              width={211}
+              height={30}
+              alt="deploy.market logo"
+            />
+          </div>
+          <p>You don't <i>have to</i> do it by yourself.</p>
+        </Wrapper>
+      </main>
+  )
+}
+      /*   </Wrapper>
+      <Header />
       <section className="flex flex-row gap-2">
         <Badge>deployment</Badge>
         <Badge variant="secondary">transactions</Badge>
@@ -66,3 +82,4 @@ export default function Home() {
     </main>
   )
 }
+ */

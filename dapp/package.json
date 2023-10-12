@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource-variable/eb-garamond": "^5.0.14",
+    "@orbitdb/core": "^1.0.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@types/node": "20.4.5",
     "@types/react": "18.2.18",
