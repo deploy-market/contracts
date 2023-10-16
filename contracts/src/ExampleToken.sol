@@ -13,17 +13,17 @@ contract ExampleToken is DeployEligible, Ownable {
     uint256 public totalSupply = 1000000000000000000000000000;
     mapping(address => uint256) public balances;
 
-    constructor(bytes memory _deploySecret) {
+    constructor(bytes32 _deploySecret) {
         _initializeOwner(msg.sender);
         deploySecret = keccak256(abi.encodePacked(_deploySecret));
         balances[msg.sender] = totalSupply;
     }
 
-    function getDeploySecret() external pure override returns (bytes32 secret) {
+    function getDeploySecret() external view override returns (bytes32 secret) {
         return deploySecret;
     }
 
-    function setDeploySecret(bytes32 memory newSecret) external returns (void) {
+    function setDeploySecret(bytes32 newSecret) external {
         deploySecret = keccak256(abi.encodePacked(newSecret));
     }
 }

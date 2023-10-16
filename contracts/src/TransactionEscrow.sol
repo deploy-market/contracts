@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "./interfaces/DeployEligible.sol";
 
-contract DeployEscrow {
+contract TransactionEscrow {
     struct Escrow {
         uint256 amount;
         address submitter;
