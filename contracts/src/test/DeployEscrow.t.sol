@@ -57,13 +57,10 @@ contract ContractTest is Test {
         vm.stopPrank();
     }
 
-    function testFail_Reward_Because_Duplicate() public {
-        uint64 one = vm.getNonce(deployer);
+    function testFail_Reward_Because_Different_Nonce() public {
         vm.startPrank(deployer);
         ExampleToken otherToken = new ExampleToken(testSecret);
         vm.stopPrank();
-        uint64 two = vm.getNonce(deployer);
-        assertEq(one + 1, two);
 
         // Submit a deploy request
         escrow.submitRequest{value: rewardAmount}(
