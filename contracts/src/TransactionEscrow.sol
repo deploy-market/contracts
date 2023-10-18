@@ -41,7 +41,7 @@ contract TransactionEscrow {
         IMulticall3.Call3[] memory calls,
         bytes32 secret,
         address payable deployerAddress
-    ) public {
+    ) public payable {
         IMulticall3.Result memory result = multicall.aggregate3(calls)[0];
         require(result.success, "Transaction failed");
 
@@ -61,7 +61,7 @@ contract TransactionEscrow {
     /**
      * @dev Withdraws the escrowed funds if the deadline has passed without a successful deployment
      */
-    function withdraw(bytes32 targetHash) public {
+    function withdraw(bytes32 targetHash) public payable {
         Escrow memory escrow = escrows[targetHash];
         require(escrow.amount > 0, "No escrow exists for this target");
         require(

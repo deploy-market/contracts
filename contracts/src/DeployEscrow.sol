@@ -6,7 +6,7 @@ import "./interfaces/DeployEligible.sol";
 contract DeployEscrow {
     struct Escrow {
         uint256 amount;
-        address submitter;
+        address payable submitter;
         uint256 deadline;
     }
 
@@ -19,7 +19,7 @@ contract DeployEscrow {
      */
     function submitRequest(
         bytes32 targetHash,
-        address submitter,
+        address payable submitter,
         uint256 deadline
     ) public payable {
         escrows[targetHash] = Escrow({
@@ -47,7 +47,7 @@ contract DeployEscrow {
         // Check that the escrow exists and has not expired
         Escrow memory escrow = escrows[targetHash];
         require(escrow.amount > 0, "No escrow exists for this target");
-        require(escrow.deadline > block.number, "Job deadline has passed");
+        require(escrow.deadline >= block.number, "Job deadline has passed");
 
         // Transfer marked funds to the deployer
         delete escrows[targetHash];
@@ -58,7 +58,7 @@ contract DeployEscrow {
     /**
      * @dev Withdraws the escrowed funds if the deadline has passed without a successful deployment
      */
-    function withdraw(bytes32 targetHash) public {
+    function withdraw(bytes32 targetHash) public payable {
         Escrow memory escrow = escrows[targetHash];
         require(escrow.amount > 0, "No escrow exists for this target");
         require(
