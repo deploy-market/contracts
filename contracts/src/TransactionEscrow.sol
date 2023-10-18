@@ -2,15 +2,19 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/DeployEligible.sol";
+import "./interfaces/IMulticall3.sol";
 
 contract TransactionEscrow {
+    IMulticall3 multicall =
+        IMulticall3(0xcA11bde05977b3631167028862bE2a173976CA11);
+
     struct Escrow {
         uint256 amount;
         address submitter;
         uint256 deadline;
     }
 
-    // Mapping from target hash (contract address + secret) to escrow
+    // Mapping from target hash (transaction hash + secret) to escrow
     mapping(bytes32 => Escrow) public escrows;
 
     /**
@@ -34,15 +38,14 @@ contract TransactionEscrow {
      * successfully.
      */
     function reward(
-        address targetAddress,
+        IMulticall3.Call3[] memory calls,
+        bytes32 secret,
         address payable deployerAddress
     ) public {
-        // Check that the target contract has been deployed successfully
-        DeployEligible target = DeployEligible(address(targetAddress));
-        bytes32 secret = target.getDeploySecret();
+        IMulticall3.Result memory result = multicall.aggregate3(calls)[0];
+        require(result.success, "Transaction failed");
 
-        // (Re)construct the submitted target hash from deployed contract info
-        bytes32 targetHash = keccak256(abi.encodePacked(targetAddress, secret));
+        bytes32 targetHash = keccak256(abi.encode(calls, secret));
 
         // Check that the escrow exists and has not expired
         Escrow memory escrow = escrows[targetHash];
