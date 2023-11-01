@@ -8,7 +8,7 @@ import "../interfaces/DeployEligible.sol";
 import "@solady/tokens/ERC20.sol";
 import "../ExampleToken.sol";
 
-contract ContractTest is Test {
+contract DeployTest is Test {
     DeployEscrow escrow;
 
     bytes32 testSecret = "supercereal";

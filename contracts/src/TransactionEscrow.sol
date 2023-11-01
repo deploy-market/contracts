@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/DeployEligible.sol";
-import "./interfaces/IMulticall3.sol";
+import "@std/interfaces/IMulticall3.sol";
 
 contract TransactionEscrow {
     IMulticall3 multicall =
@@ -10,7 +10,7 @@ contract TransactionEscrow {
 
     struct Escrow {
         uint256 amount;
-        address submitter;
+        address payable submitter;
         uint256 deadline;
     }
 
@@ -18,12 +18,12 @@ contract TransactionEscrow {
     mapping(bytes32 => Escrow) public escrows;
 
     /**
-     * A deploy request is simply a customer submitted challenge submitted to
-     * this escrow that can be withdrawn with successful deployment of a contract
+     * A transaction request is simply a customer submitted challenge submitted to
+     * this escrow that can be withdrawn with successful transaction call
      */
     function submitRequest(
         bytes32 targetHash,
-        address submitter,
+        address payable submitter,
         uint256 deadline
     ) public payable {
         escrows[targetHash] = Escrow({
@@ -34,8 +34,7 @@ contract TransactionEscrow {
     }
 
     /**
-     * @dev Withdraws the escrowed funds if the target contract has been deployed
-     * successfully.
+     * @dev Withdraws the escrowed funds if the transaction calls succeed
      */
     function reward(
         IMulticall3.Call3[] memory calls,
@@ -59,7 +58,7 @@ contract TransactionEscrow {
     }
 
     /**
-     * @dev Withdraws the escrowed funds if the deadline has passed without a successful deployment
+     * @dev Withdraws the escrowed funds if the deadline has passed without a successful transaction
      */
     function withdraw(bytes32 targetHash) public payable {
         Escrow memory escrow = escrows[targetHash];
