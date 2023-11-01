@@ -1,59 +1,30 @@
 "use client"
 import Wrapper from '@/components/wrapper'
-import { createOrbitDB } from '@orbitdb/core'
-import IPFS from 'ipfs-core'
+
 import Image from 'next/image'
-import { useEffect } from "react"
 
 export default function Home() {
-  const connect = async () => {
-    const ipfs = await IPFS.create()
-    const orbitdb = await createOrbitDB({ ipfs })
-    // Create / Open a database. Defaults to db type "events".
-    const db = await orbitdb.open("hello")
-    
-    const address = db.address
-    console.log(address)
-    // "/orbitdb/zdpuAkstgbTVGHQmMi5TC84auhJ8rL5qoaNEtXo2d5PHXs2To"
-    // The above address can be used on another peer to open the same database
-
-    // Listen for updates from peers
-    db.events.on("update", async (entry: any) => {
-      console.log(entry)
-      const all = await db.all()
-      console.log(all)
-    })
-
-    // Add an entry
-    const hash = await db.add("world")
-    console.log(hash)
-
-    // Query
-    for await (const record of db.iterator()) {
-      console.log(record)
-    }
-    
-    await db.close()
-    await orbitdb.stop()
-  }
-
-  useEffect(() => {
-    connect()
-  }, [])
+  
   return (
-      <main className="flex items-center justify-center h-screen w-full overflow-hidden text-gray-400 p-2">
+      <div className="flex flex-col items-center justify-start h-screen w-full overflow-hidden text-gray-400 py-6">
         <Wrapper>
-          <div className="brightness-[1.4]">
-            <Image
-              src="/deploy.market.color.svg"
-              width={211}
-              height={30}
-              alt="deploy.market logo"
-            />
-          </div>
-          <p>You don't <i>have to</i> do it by yourself.</p>
+          <header className="flex flex-row justify-between items-center gap-6">
+            <div className="brightness-[1.4]">
+              <Image
+                src="/deploy.market.color.svg"
+                width={211}
+                height={30}
+                alt="deploy.market logo"
+              />
+            </div>
+            <nav className="flex flex-row justify-between items-center gap-3">
+              <button className="text-white">Deploy</button>
+              <button>Transact</button>
+            </nav>
+          </header>
+          {/* <OrbitConnector /> */}
         </Wrapper>
-      </main>
+      </div>
   )
 }
       /*   </Wrapper>
