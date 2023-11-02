@@ -5,8 +5,7 @@ import "./interfaces/DeployEligible.sol";
 import "@std/interfaces/IMulticall3.sol";
 
 contract TransactionEscrow {
-    IMulticall3 multicall =
-        IMulticall3(0xcA11bde05977b3631167028862bE2a173976CA11);
+    IMulticall3 multicall;
 
     struct Escrow {
         uint256 amount;
@@ -16,6 +15,10 @@ contract TransactionEscrow {
 
     // Mapping from target hash (transaction hash + secret) to escrow
     mapping(bytes32 => Escrow) public escrows;
+
+    constructor(address multicallAddress) {
+        multicall = IMulticall3(multicallAddress);
+    }
 
     /**
      * A transaction request is simply a customer submitted challenge submitted to
@@ -37,11 +40,11 @@ contract TransactionEscrow {
      * @dev Withdraws the escrowed funds if the transaction calls succeed
      */
     function reward(
-        IMulticall3.Call3[] memory calls,
+        IMulticall3.Call3Value[] calldata calls,
         bytes32 secret,
         address payable deployerAddress
     ) public payable {
-        IMulticall3.Result memory result = multicall.aggregate3(calls)[0];
+        IMulticall3.Result memory result = multicall.aggregate3Value(calls)[0];
         require(result.success, "Transaction failed");
 
         bytes32 targetHash = keccak256(abi.encode(calls, secret));

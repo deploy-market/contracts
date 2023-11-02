@@ -8,11 +8,11 @@ import "../TransactionEscrow.sol";
 import "@solady/tokens/ERC20.sol";
 import "../ExampleToken.sol";
 import "@std/interfaces/IMulticall3.sol";
+import "../lib/Multicall3.sol";
 
 contract TransactionTest is Test {
     TransactionEscrow escrow;
-    IMulticall3 multicall =
-        IMulticall3(0xcA11bde05977b3631167028862bE2a173976CA11);
+    Multicall3 multicall;
 
     bytes32 testSecret = "supercereal";
     bytes32 encoded_testSecret = keccak256(abi.encodePacked(testSecret));
@@ -25,7 +25,8 @@ contract TransactionTest is Test {
     receive() external payable {}
 
     function setUp() public {
-        escrow = new TransactionEscrow();
+        multicall = new Multicall3();
+        escrow = new TransactionEscrow(address(multicall));
 
         /**
          * Make the transaction here to get the target hash.
@@ -33,16 +34,17 @@ contract TransactionTest is Test {
          * in the dApp, only simulating the transaction.
          */
         vm.startPrank(deployer);
-        testToken = new ExampleToken(testSecret);
 
-        IMulticall3.Call3[] storage callData;
-        callData += IMulticall3.Call3({
+        testToken = new ExampleToken(testSecret);
+        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
+        calls[0] = IMulticall3.Call3Value({
             target: address(testToken),
             callData: abi.encodeWithSelector(0x70a08231, (deployer)),
+            value: 0,
             allowFailure: false
         });
+        targetHash = keccak256(abi.encode(calls, testSecret));
 
-        targetHash = keccak256(abi.encode(callData, testSecret));
         vm.stopPrank();
     }
 
@@ -61,14 +63,16 @@ contract TransactionTest is Test {
 
         // Check that the escrow can be rewarded
         vm.startPrank(deployer);
-        IMulticall3.Call3[] storage callData;
-        callData += IMulticall3.Call3({
+        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
+        calls[0] = IMulticall3.Call3Value({
             target: address(testToken),
             callData: abi.encodeWithSelector(0x70a08231, (deployer)),
+            value: 0,
             allowFailure: false
         });
-        escrow.reward(callData, testSecret, payable(deployer));
+        escrow.reward(calls, testSecret, payable(deployer));
         assertEq(address(escrow).balance, 0);
+
         vm.stopPrank();
     }
 }

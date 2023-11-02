@@ -1,27 +1,14 @@
 "use client"
+import Header from '@/components/header'
 import Wrapper from '@/components/wrapper'
 
-import Image from 'next/image'
 
 export default function Home() {
   
   return (
       <div className="flex flex-col items-center justify-start h-screen w-full overflow-hidden text-gray-400 py-6">
         <Wrapper>
-          <header className="flex flex-row justify-between items-center gap-6">
-            <div className="brightness-[1.4]">
-              <Image
-                src="/deploy.market.color.svg"
-                width={211}
-                height={30}
-                alt="deploy.market logo"
-              />
-            </div>
-            <nav className="flex flex-row justify-between items-center gap-3">
-              <button className="text-white">Deploy</button>
-              <button>Transact</button>
-            </nav>
-          </header>
+          <Header />
           {/* <OrbitConnector /> */}
         </Wrapper>
       </div>
