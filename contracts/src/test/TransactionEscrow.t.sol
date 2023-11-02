@@ -37,15 +37,16 @@ contract TransactionTest is Test {
 
         testToken = new ExampleToken(testSecret);
         IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
-        calls[0] = IMulticall3.Call3Value({
-            target: address(testToken),
-            callData: abi.encodeWithSelector(0x70a08231, (deployer)),
-            value: 0,
-            allowFailure: false
-        });
+        calls[0] = IMulticall3.Call3Value(
+            address(multicall),
+            false,
+            0,
+            abi.encodeWithSignature("getBlockNumber()")
+        );
         targetHash = keccak256(abi.encode(calls, testSecret));
 
         vm.stopPrank();
+        emit log("Transaction Escrow test setup complete");
     }
 
     function test_Reward() public {
@@ -64,14 +65,24 @@ contract TransactionTest is Test {
         // Check that the escrow can be rewarded
         vm.startPrank(deployer);
         IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
-        calls[0] = IMulticall3.Call3Value({
-            target: address(testToken),
-            callData: abi.encodeWithSelector(0x70a08231, (deployer)),
-            value: 0,
-            allowFailure: false
-        });
-        escrow.reward(calls, testSecret, payable(deployer));
+        calls[0] = IMulticall3.Call3Value(
+            address(multicall),
+            false,
+            0,
+            abi.encodeWithSignature("getBlockNumber()")
+        );
+        emit log(
+            "Trying to reward the deployer by doing the correct transaction"
+        );
+        IMulticall3.Result[] memory results = escrow.reward(
+            calls,
+            testSecret,
+            payable(deployer)
+        );
         assertEq(address(escrow).balance, 0);
+        assertEq(results.length, 1);
+        assertEq(results[0].success, true);
+        assertEq(results[0].returnData, abi.encodePacked(block.number));
 
         vm.stopPrank();
     }

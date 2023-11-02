@@ -43,9 +43,9 @@ contract TransactionEscrow {
         IMulticall3.Call3Value[] calldata calls,
         bytes32 secret,
         address payable deployerAddress
-    ) public payable {
-        IMulticall3.Result memory result = multicall.aggregate3Value(calls)[0];
-        require(result.success, "Transaction failed");
+    ) public payable returns (IMulticall3.Result[] memory returnData) {
+        IMulticall3.Result[] memory results = multicall.aggregate3Value(calls);
+        require(results[0].success, "Transaction failed");
 
         bytes32 targetHash = keccak256(abi.encode(calls, secret));
 
@@ -58,6 +58,8 @@ contract TransactionEscrow {
         delete escrows[targetHash];
         (bool success, ) = deployerAddress.call{value: escrow.amount}("");
         require(success, "Failed to send a reward");
+
+        return results;
     }
 
     /**
