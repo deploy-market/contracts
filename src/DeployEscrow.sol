@@ -4,14 +4,21 @@ pragma solidity ^0.8.19;
 import "./interfaces/DeployEligible.sol";
 
 contract DeployEscrow {
+    address public owner;
+
     struct Escrow {
         uint256 amount;
         address payable submitter;
         uint256 deadline;
+        uint8 feePermille;
     }
 
     // Mapping from target hash (contract address + secret) to escrow
     mapping(bytes32 => Escrow) public escrows;
+
+    constructor(address ownerAddress) {
+        owner = ownerAddress;
+    }
 
     /**
      * A deploy request is simply a customer submitted challenge submitted to
@@ -20,13 +27,25 @@ contract DeployEscrow {
     function submitRequest(
         bytes32 targetHash,
         address payable submitter,
-        uint256 deadline
+        uint256 deadline,
+        uint8 feePermille
     ) public payable {
         escrows[targetHash] = Escrow({
             amount: msg.value,
             submitter: submitter,
-            deadline: deadline
+            deadline: deadline,
+            feePermille: feePermille
         });
+    }
+
+    /**
+     * @dev Calculates the fee
+     */
+    function calculateFee(
+        uint256 amount,
+        uint8 feePermille
+    ) public pure returns (uint256) {
+        return (amount / 1000) * feePermille;
     }
 
     /**
@@ -51,8 +70,18 @@ contract DeployEscrow {
 
         // Transfer marked funds to the deployer
         delete escrows[targetHash];
+
+        // Calculate and pay the fee if existent
+        if (escrow.feePermille > 0) {
+            uint256 feeAmount = calculateFee(escrow.amount, escrow.feePermille);
+            require(feeAmount > 0, "Failed to calculate the fee for this job");
+            (bool feeSuccess, ) = owner.call{value: feeAmount}("");
+            require(feeSuccess, "Failed to send the fee for this job");
+        }
+
+        // Pay the reward to the deployer
         (bool success, ) = deployerAddress.call{value: escrow.amount}("");
-        require(success, "Failed to send a reward");
+        require(success, "Failed to send a reward for this job");
     }
 
     /**
@@ -69,5 +98,10 @@ contract DeployEscrow {
         delete escrows[targetHash];
         (bool success, ) = escrow.submitter.call{value: escrow.amount}("");
         require(success, "Failed to withdraw");
+    }
+
+    function setOwner(address newOwner) public {
+        require(msg.sender == owner, "Only the owner can set the owner");
+        owner = newOwner;
     }
 }

@@ -2,12 +2,9 @@
 pragma solidity ^0.8.19;
 
 import "@std/Test.sol";
-import "@std/Vm.sol";
-import "@std/StdUtils.sol";
 import "../TransactionEscrow.sol";
 import "@solady/tokens/ERC20.sol";
 import "../ExampleToken.sol";
-import "@std/interfaces/IMulticall3.sol";
 import "../lib/Multicall3.sol";
 
 contract TransactionTest is Test {

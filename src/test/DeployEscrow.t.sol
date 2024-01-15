@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "@std/Test.sol";
-import "@std/Vm.sol";
 import "../DeployEscrow.sol";
 import "../interfaces/DeployEligible.sol";
 import "@solady/tokens/ERC20.sol";
@@ -22,7 +21,7 @@ contract DeployTest is Test {
     receive() external payable {}
 
     function setUp() public {
-        escrow = new DeployEscrow();
+        escrow = new DeployEscrow(address(this));
 
         /**
          * Deploy the contract here to get the address & the target hash.
@@ -42,11 +41,12 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            20 // 2% fee
         );
 
         // Check that the escrow exists
-        (uint256 amount, , ) = escrow.escrows(targetHash);
+        (uint256 amount, , , ) = escrow.escrows(targetHash);
         assertEq(amount, rewardAmount);
         assertEq(address(escrow).balance, rewardAmount);
 
@@ -66,7 +66,8 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            0
         );
 
         // Check that not all similar contracts apply, even if they had the same secret
@@ -88,7 +89,8 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            0
         );
 
         // Move the block number forward
@@ -105,7 +107,8 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            0
         );
 
         vm.startPrank(deployer);
@@ -122,7 +125,8 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            0
         );
 
         // Move the block number forward
@@ -138,7 +142,8 @@ contract DeployTest is Test {
         escrow.submitRequest{value: rewardAmount}(
             targetHash,
             payable(address(this)),
-            block.number + 100
+            block.number + 100,
+            0
         );
 
         // Move the block number forward
