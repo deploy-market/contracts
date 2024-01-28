@@ -65,6 +65,7 @@ contract DeployEscrow {
 
         // Check that the escrow exists and has not expired
         Escrow memory escrow = escrows[targetHash];
+        uint256 feeAmount = 0;
         require(escrow.amount > 0, "No escrow exists for this target");
         require(escrow.deadline >= block.number, "Job deadline has passed");
 
@@ -73,14 +74,17 @@ contract DeployEscrow {
 
         // Calculate and pay the fee if existent
         if (escrow.feePermille > 0) {
-            uint256 feeAmount = calculateFee(escrow.amount, escrow.feePermille);
+            feeAmount = calculateFee(escrow.amount, escrow.feePermille);
+            require(feeAmount < escrow.amount, "Fee can't be larger than the escrow amount!");
             require(feeAmount > 0, "Failed to calculate the fee for this job");
             (bool feeSuccess, ) = owner.call{value: feeAmount}("");
             require(feeSuccess, "Failed to send the fee for this job");
         }
 
+        require(address(this).balance >= escrow.amount - feeAmount, "No ETH to pay escrow reward!");
+
         // Pay the reward to the deployer
-        (bool success, ) = deployerAddress.call{value: escrow.amount}("");
+        (bool success, ) = deployerAddress.call{value: escrow.amount - feeAmount}("");
         require(success, "Failed to send a reward for this job");
     }
 

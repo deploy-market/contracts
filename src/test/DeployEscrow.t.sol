@@ -19,6 +19,7 @@ contract DeployTest is Test {
 
     // Make the test contract payable for withdrawals
     receive() external payable {}
+    fallback() external payable {}
 
     function setUp() public {
         escrow = new DeployEscrow(address(this));
