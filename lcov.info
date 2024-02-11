@@ -4,8 +4,8 @@ FN:27,DeployEscrow.submitRequest
 FNDA:2,DeployEscrow.submitRequest
 DA:33,2
 FN:44,DeployEscrow.calculateFee
-FNDA:0,DeployEscrow.calculateFee
-DA:48,1
+FNDA:3,DeployEscrow.calculateFee
+DA:48,4
 FN:55,DeployEscrow.reward
 FNDA:1,DeployEscrow.reward
 DA:60,1
@@ -62,7 +62,7 @@ BRDA:108,11,0,-
 BRDA:108,11,1,-
 DA:109,0
 FNF:5
-FNH:3
+FNH:4
 LF:27
 LH:25
 BRF:24
