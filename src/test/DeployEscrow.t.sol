@@ -37,6 +37,21 @@ contract DeployTest is Test {
         vm.stopPrank();
     }
 
+    function test_FeeCalculation() public {
+        // Using permilles, 20 permille is 2%
+        uint256 fee = escrow.calculateFee(rewardAmount, 20);
+        
+        // Divide by 50, because 1000 / 20 = 50
+        assertEq(fee, rewardAmount / 50);
+
+        uint256 fee2 = escrow.calculateFee(rewardAmount, 255);
+        // Divide by 3921, because 1000 / 255 = 3921
+        assertEq(fee2, rewardAmount / 10**11 / 3921 * 10**14);
+
+        uint256 fee3 = escrow.calculateFee(rewardAmount, 0);
+        assertEq(fee3, 0);
+    }
+
     function test_Reward() public {
         // Submit a deploy request as the customer
         escrow.submitRequest{value: rewardAmount}(
@@ -55,6 +70,7 @@ contract DeployTest is Test {
         vm.startPrank(deployer);
         escrow.reward(address(testToken), payable(deployer));
         assertEq(address(escrow).balance, 0);
+
         vm.stopPrank();
     }
 
