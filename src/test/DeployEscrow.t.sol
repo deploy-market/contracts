@@ -52,6 +52,24 @@ contract DeployTest is Test {
         assertEq(fee3, 0);
     }
 
+    function testFail_FeeCalculation_Because_Overflow() public {
+        // Using permilles, 20 permille is 2%
+        escrow.calculateFee(type(uint256).max, 20);
+        vm.expectRevert("SafeMath: multiplication overflow");
+    }
+
+    function testFail_FeeCalculation_Because_Overflow2() public {
+        // Using permilles, 20 permille is 2%
+        escrow.calculateFee(0, type(uint8).max);
+        vm.expectRevert("SafeMath: multiplication overflow");
+    }
+
+    function testFail_FeeCalculation_Because_Overflow3() public {
+        // Using permilles, 20 permille is 2%
+        escrow.calculateFee(type(uint256).max, type(uint8).max);
+        vm.expectRevert("SafeMath: multiplication overflow");
+    }
+
     function test_Reward() public {
         // Submit a deploy request as the customer
         escrow.submitRequest{value: rewardAmount}(
