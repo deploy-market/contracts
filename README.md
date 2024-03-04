@@ -12,3 +12,9 @@ This project uses Foundry for development.
 forge test
 forge coverage --report lcov
 ```
+
+### Building for deployment (bytecode, ABI)
+  
+```bash
+forge build --extra-output abi
+```
