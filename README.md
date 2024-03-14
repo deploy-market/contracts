@@ -1,5 +1,7 @@
 # deploy.market
 
+[![codecov](https://codecov.io/gh/deploy-market/contracts/graph/badge.svg?token=C4LP39DKG4)](https://codecov.io/gh/deploy-market/contracts)
+
 A Verifiable Craigslist for transactions.
 
 ## Development
